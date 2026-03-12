@@ -1,13 +1,14 @@
-import java.time.LocalDate;
-
 public class Aluno {
     private String nome;
-    private LocalDate dataNascimento;
+    private String dataNascimento;
     private Turma turma;
+    private boolean ativo;
 
-    public Aluno(String nome, LocalDate dataNascimento) {
+    public Aluno(String nome, String dataNascimento, Turma turma) {
         this.nome = nome;
         this.dataNascimento = dataNascimento;
+        this.turma = turma;
+        this.ativo = true;
     }
 
     public String getNome() {
@@ -18,11 +19,11 @@ public class Aluno {
         this.nome = nome;
     }
 
-    public LocalDate getDataNascimento() {
+    public String getDataNascimento() {
         return dataNascimento;
     }
 
-    public void setDataNascimento(LocalDate dataNascimento) {
+    public void setDataNascimento(String dataNascimento) {
         this.dataNascimento = dataNascimento;
     }
 
@@ -32,6 +33,14 @@ public class Aluno {
 
     public void setTurma(Turma turma) {
         this.turma = turma;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     @Override
