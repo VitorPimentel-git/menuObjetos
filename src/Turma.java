@@ -1,4 +1,4 @@
-public class Turma {
+public class Turma implements Ativavel {
     private String curso;
     private String sigla;
     private Periodo periodo;

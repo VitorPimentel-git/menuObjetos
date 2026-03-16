@@ -1,4 +1,4 @@
-public class Aluno {
+public class Aluno implements Ativavel {
     private String nome;
     private String dataNascimento;
     private Turma turma;
