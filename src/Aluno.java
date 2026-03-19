@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 public class Aluno implements Ativavel {
     private String nome;
     private String dataNascimento;

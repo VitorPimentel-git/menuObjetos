@@ -3,6 +3,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.time.Period;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -126,13 +127,32 @@ public class Main {
     }
 
     private static void listarAlunos() {
-        if (isVazio(listaAlunos)) {
-            System.out.println("Não há alunos cadastrados");
+
+        if (isVazio(listaTurmas)) {
+            System.out.println("Não há turmas cadastradas");
             return;
         }
+
+        listarTurmasIndiceSigla();
+        int id = validaId(listaTurmas);
+
+        Turma turmaSelecionada = listaTurmas.get(id);
+
+        System.out.println("\nAlunos da turma: " + turmaSelecionada.getSigla());
+
+        boolean encontrou = false;
+
         for (Aluno a : listaAlunos) {
-            if (a.isAtivo())
+            if (a.isAtivo() &&
+                    a.getTurma().getSigla().equals(turmaSelecionada.getSigla())) {
+
                 System.out.println(a);
+                encontrou = true;
+            }
+        }
+
+        if (!encontrou) {
+            System.out.println("Nenhum aluno encontrado nessa turma.");
         }
     }
 
@@ -232,10 +252,33 @@ public class Main {
     private static String validarData() {
         String dataNascimento = Leitura.dados("Digite a data de nascimento do aluno (dd/mm/yyyy) : ");
         while (!isData(dataNascimento)) {
-            System.out.println("Data inválida! Digite nesse formato (dd/mm/yyyy)");
+            System.out.println("Data inválida!");
             dataNascimento = Leitura.dados("Digite a data de nascimento do aluno (dd/mm/yyyy) : ");
         }
         return dataNascimento;
+    }
+
+    private static boolean isData(String dataNascimento) {
+        try {
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/uuuu");
+            LocalDate nascimento = LocalDate.parse(dataNascimento, formato);
+
+            if (nascimento.isAfter(LocalDate.now())) {
+                return false;
+            }
+
+            Period idade = Period.between(nascimento, LocalDate.now());
+            int anos = idade.getYears();
+
+            if (anos < 14 || anos > 130) {
+                return false;
+            }
+
+            return true;
+
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 
     private static Turma validarTurma() {
@@ -319,16 +362,64 @@ public class Main {
             System.out.println("Não há turmas cadastradas");
             return;
         }
-        listarTurmasIndiceSigla();
 
+        listarTurmasIndiceSigla();
         int idExcluir = validaId(listaTurmas);
 
-        if (confirmaExclusao()) {
-//
-            listaTurmas.get(idExcluir).setAtivo(false);
-            System.out.println("Turma excluída com sucesso!");
-        } else {
-            System.out.println("Operação cancelada!");
+        Turma turmaSelecionada = listaTurmas.get(idExcluir);
+
+        //  verifica se tem aluno ativo na turma
+        boolean temAlunoAtivo = listaAlunos.stream()
+                .anyMatch(aluno ->
+                        aluno.isAtivo() &&
+                                aluno.getTurma().getSigla().equals(turmaSelecionada.getSigla())
+                );
+
+        //  se NÃO tiver aluno segue fluxo normal
+        if (!temAlunoAtivo) {
+
+            if (confirmaExclusao()) {
+                turmaSelecionada.setAtivo(false);
+                System.out.println("Turma excluída com sucesso!");
+            } else {
+                System.out.println("Operação cancelada!");
+            }
+
+            return;
+        }
+
+        //  se tiver aluno ativo
+        System.out.println("Essa turma possui alunos ativos!");
+
+        String opcao = Leitura.dados("Deseja excluir a turma realmente? Os alunos também serão excluídos! (S/N): ").toUpperCase();
+
+        switch (opcao) {
+            case "S":
+
+
+                listaAlunos.forEach(aluno -> {
+                    if (aluno.isAtivo() &&
+                            aluno.getTurma().getSigla().equals(turmaSelecionada.getSigla())) {
+
+                        aluno.setAtivo(false);
+                    }
+                });
+
+                if (confirmaExclusao()) {
+                    turmaSelecionada.setAtivo(false);
+                    System.out.println("Alunos e turma excluídos com sucesso!");
+                } else {
+                    System.out.println("Operação cancelada!");
+                }
+
+                break;
+
+            case "N":
+                System.out.println("Operação cancelada!");
+                break;
+
+            default:
+                System.out.println("Opção inválida!");
         }
     }
 
@@ -416,21 +507,6 @@ public class Main {
         return opcaoValida;
     }
 
-    private static boolean isData(String dataNascimento) {
-        try {
-            DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/uuuu");
-            LocalDate nascimento = LocalDate.parse(dataNascimento, formato);
 
-            // verifica se não é uma data futura
-            if (nascimento.isAfter(LocalDate.now())) {
-                return false;
-            }
-
-            return true;
-
-        } catch (DateTimeParseException e) {
-            return false; // data inválida
-        }
-    }
 
 }
